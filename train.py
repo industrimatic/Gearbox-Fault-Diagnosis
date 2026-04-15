@@ -1,9 +1,10 @@
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 from time import time
 from dataloader.dataloader import get_seu_dataloaders
-from model.model import ResNet1
+from model.model import ResNet
 
 DATA_PATH = './dataset/gearset/'
 BATCH_SIZE = 16
@@ -11,14 +12,15 @@ NUM_WORKERS = 4
 EPOCH = 10
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = ResNet1()
+model = ResNet()
 model.to(device=DEVICE)
 
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 """
-！训练前务必修改模型保存的权重名称，否则之前训练好的老权重会被覆盖！
+！！！训练前务必修改模型保存的权重名称！！！
+！！！否则之前训练好的老文件会被覆盖！！！
 """
 
 
@@ -60,6 +62,31 @@ def test(test_loader):
     return 100 * correct / total
 
 
+def plot_accuracy_figure(show_accu: list):
+
+    x = np.arange(0, len(show_accu), 1)
+
+    plt.plot(x, show_accu)
+    plt.title("Accuracy Figure")
+    plt.xlabel("Epoch")
+    plt.ylabel("Accuracy Rate (%)")
+    plt.tight_layout()
+
+    base_name = 'AccuracyFigure'
+    ext = '.png'
+    filename = f"{base_name}{ext}"
+
+    counter = 1
+    while os.path.exists(filename):
+        filename = f"{base_name}_{counter}{ext}"
+        counter += 1
+
+    plt.savefig(filename, bbox_inches='tight')
+    print(f"图表已成功保存为: {filename}")
+
+    plt.show()
+
+
 if __name__ == "__main__":
 
     start_time = time()
@@ -80,10 +107,5 @@ if __name__ == "__main__":
             print("该epoch并非最佳模型")
 
     print(f'最好模型准确率为： {max(show_accu):.3f}')
-    x = np.arange(0, len(show_accu), 1)
-    plt.plot(x, show_accu)
-    plt.title("Accuracy Figure (%)")
-    plt.xlabel("Epoch")
-    plt.ylabel("Accuracy Rate")
-    plt.tight_layout()
-    plt.show()
+
+    plot_accuracy_figure(show_accu=show_accu)

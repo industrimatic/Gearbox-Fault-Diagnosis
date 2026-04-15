@@ -4,14 +4,14 @@ import seaborn as sns
 from time import time
 from sklearn.metrics import confusion_matrix
 from dataloader.dataloader import get_seu_dataloaders
-from model.model import ResNet1
+from model.model import ResNet
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_PATH = './dataset/gearset/'
 WEIGHT_PATH = './weight/model1_epoch10_ac99_8.pth'
 CLASS_NAME = ['Health', 'Chipped', 'Miss', 'Root', 'Surface']
 
-model = ResNet1()
+model = ResNet()
 model.load_state_dict(torch.load(WEIGHT_PATH))
 model.to(DEVICE)
 model.eval()
