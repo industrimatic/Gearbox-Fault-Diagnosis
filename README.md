@@ -1,6 +1,6 @@
 # 齿轮箱故障诊断
 
-This README is written by Qinghan You from USTB 2026 and used for recording purpose
+GBD(GearBoxDiagnosis)即齿轮箱故障诊断，使用了东南大学的公开数据集
 
 ## 数据集
 [GitHub公开故障诊断数据集](https://github.com/hustcxl/Rotating-machine-fault-data-set)
