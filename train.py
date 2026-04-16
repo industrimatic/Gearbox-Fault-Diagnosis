@@ -7,6 +7,7 @@ from dataloader.dataloader import get_seu_dataloaders
 from model.model import ResNet
 
 DATA_PATH = './dataset/gearset/'
+WEIGHT_PATH = './weight/'
 BATCH_SIZE = 16
 NUM_WORKERS = 4
 EPOCH = 10
@@ -62,6 +63,19 @@ def test(test_loader):
     return 100 * correct / total
 
 
+def weight_filename(file_name: str) -> str:
+
+    # filename:xxx
+
+    full_name = f'{WEIGHT_PATH}{file_name}.pth'
+    count = 1
+    while os.path.exists(full_name):
+        full_name = f'{WEIGHT_PATH}{file_name}_{count}.pth'
+        count += 1
+
+    return full_name
+
+
 def plot_accuracy_figure(show_accu: list):
 
     x = np.arange(0, len(show_accu), 1)
@@ -100,12 +114,16 @@ if __name__ == "__main__":
         train(epoch, train_loader)
         show_accu.append(test(test_loader))
         print(f'Epoch:{epoch+1} 完毕|已耗时:{(time()-start_time):.2f}s')
+
         if show_accu[-1] == max(show_accu):
-            torch.save(model.state_dict(), f'./weight/model1_epoch{EPOCH}.pth')
+            torch.save(model.state_dict(), weight_filename(f'epoch{EPOCH}'))
             print("已保存更好的模型")
         else:
             print("该epoch并非最佳模型")
 
     print(f'最好模型准确率为： {max(show_accu):.3f}')
+
+    accu_str = f'{max(show_accu):.3f}'.replace('.', '_')
+    os.rename(weight_filename(f'epoch{EPOCH}'), weight_filename(f'epoch{epoch}_ac{accu_str}'))
 
     plot_accuracy_figure(show_accu=show_accu)
