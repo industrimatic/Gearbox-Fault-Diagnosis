@@ -19,11 +19,6 @@ model.to(device=DEVICE)
 criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-"""
-！！！训练前务必修改模型保存的权重名称！！！
-！！！否则之前训练好的老文件会被覆盖！！！
-"""
-
 
 def train(epoch, train_loader):
     model.train()
