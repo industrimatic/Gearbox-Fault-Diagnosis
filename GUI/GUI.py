@@ -6,15 +6,11 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
 from PySide6.QtCore import Qt, QThread, Signal
 from PySide6.QtGui import QFont, QIcon
 
-# ==========================================
-# 1. 定义工作线程（防止训练时界面卡死）
-# ==========================================
-
 
 class TrainingThread(QThread):
-    progress_update = Signal(int)  # 传递进度条百分比
-    log_update = Signal(str)       # 传递训练日志
-    finished_signal = Signal()     # 训练结束信号
+    progress_update = Signal(int)
+    log_update = Signal(str)
+    finished_signal = Signal()
 
     def run(self):
         self.log_update.emit("初始化模型参数...")
@@ -22,7 +18,7 @@ class TrainingThread(QThread):
 
         epochs = 100
         for i in range(1, epochs + 1):
-            # 这里替换为你的真实训练代码 (例如: loss = model.train_step())
+
             time.sleep(0.05)  # 模拟每个 epoch 的训练耗时
 
             # 更新进度条
@@ -36,10 +32,6 @@ class TrainingThread(QThread):
         self.log_update.emit("训练完成！模型已保存。")
         self.finished_signal.emit()
 
-# ==========================================
-# 2. 主窗口界面设计
-# ==========================================
-
 
 class FaultDiagnosisUI(QMainWindow):
     def __init__(self):
@@ -51,20 +43,18 @@ class FaultDiagnosisUI(QMainWindow):
         self.apply_stylesheet()
 
     def init_ui(self):
-        # 主控组件与布局
+
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
 
-        # 标题区域
         title_label = QLabel("基于深度学习的设备故障诊断系统")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setObjectName("titleLabel")  # 用于 QSS 样式绑定
         main_layout.addWidget(title_label)
 
-        # --- 模块 1：数据集导入 ---
         data_group = QGroupBox("1. 数据准备")
         data_layout = QHBoxLayout(data_group)
 
@@ -77,11 +67,9 @@ class FaultDiagnosisUI(QMainWindow):
         data_layout.addWidget(self.lbl_path, stretch=1)
         main_layout.addWidget(data_group)
 
-        # --- 模块 2：模型训练与进度展示 ---
         train_group = QGroupBox("2. 模型训练")
         train_layout = QVBoxLayout(train_group)
 
-        # 控制按钮与进度条
         control_layout = QHBoxLayout()
         self.btn_train = QPushButton("开始训练")
         self.btn_train.clicked.connect(self.start_training)
@@ -95,7 +83,6 @@ class FaultDiagnosisUI(QMainWindow):
         control_layout.addWidget(self.progress_bar, stretch=1)
         train_layout.addLayout(control_layout)
 
-        # 日志输出框
         self.log_box = QTextEdit()
         self.log_box.setReadOnly(True)
         self.log_box.setPlaceholderText("训练日志将在此处显示...")
@@ -103,7 +90,6 @@ class FaultDiagnosisUI(QMainWindow):
 
         main_layout.addWidget(train_group)
 
-        # --- 模块 3：模型工作/在线诊断 ---
         work_group = QGroupBox("3. 故障诊断推理")
         work_layout = QHBoxLayout(work_group)
 
@@ -192,12 +178,9 @@ class FaultDiagnosisUI(QMainWindow):
         """
         self.setStyleSheet(style)
 
-    # ==========================================
-    # 3. 功能逻辑实现
-    # ==========================================
     def import_dataset(self):
         """导入数据集功能"""
-        # 这里以选择文件夹为例，你也可以改为 getOpenFileName 选择 CSV/MAT 文件
+
         directory = QFileDialog.getExistingDirectory(self, "选择数据集文件夹", "")
         if directory:
             self.dataset_path = directory
@@ -215,7 +198,6 @@ class FaultDiagnosisUI(QMainWindow):
         self.progress_bar.setValue(0)
         self.log_box.clear()
 
-        # 初始化并启动后台线程
         self.thread = TrainingThread()
         self.thread.progress_update.connect(self.update_progress)
         self.thread.log_update.connect(self.update_log)
@@ -227,7 +209,7 @@ class FaultDiagnosisUI(QMainWindow):
 
     def update_log(self, text):
         self.log_box.append(text)
-        # 自动滚动到最底部
+
         scrollbar = self.log_box.verticalScrollBar()
         scrollbar.setValue(scrollbar.maximum())
 
@@ -240,14 +222,12 @@ class FaultDiagnosisUI(QMainWindow):
         if self.progress_bar.value() != 100:
             self.log_box.append("> 提示：建议先完成模型训练再进行诊断。")
 
-        # 模拟加载测试数据并输出结果
         self.lbl_result.setStyleSheet("color: #409EFF; background-color: #ECF5FF; border-color: #D9ECFF;")
         self.lbl_result.setText("正在分析振动信号...")
         QApplication.processEvents()  # 强制刷新界面一下
 
         time.sleep(1)  # 模拟推理时间
 
-        # 模拟诊断结果 (你可以将其替换为 model.predict(data))
         diagnosis_status = "【内圈故障】 置信度: 98.5%"
         self.lbl_result.setStyleSheet("color: #F56C6C; background-color: #FEF0F0; border-color: #FDE2E2;")
         self.lbl_result.setText(f"诊断结果：{diagnosis_status}")
@@ -257,7 +237,6 @@ class FaultDiagnosisUI(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
-    # 设置全局字体
     font = QFont("Microsoft YaHei", 10)
     app.setFont(font)
 
