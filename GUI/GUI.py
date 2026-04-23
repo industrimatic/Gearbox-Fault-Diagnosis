@@ -50,7 +50,7 @@ class FaultDiagnosisUI(QMainWindow):
         main_layout.setContentsMargins(20, 20, 20, 20)
         main_layout.setSpacing(20)
 
-        title_label = QLabel("基于深度学习的设备故障诊断系统")
+        title_label = QLabel("齿轮箱故障诊断系统")
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title_label.setObjectName("titleLabel")  # 用于 QSS 样式绑定
         main_layout.addWidget(title_label)
@@ -106,7 +106,7 @@ class FaultDiagnosisUI(QMainWindow):
         main_layout.addWidget(work_group)
 
     def apply_stylesheet(self):
-        """应用现代扁平化 QSS 样式"""
+        """QSS 样式"""
         style = """
             QMainWindow {
                 background-color: #F5F7FA;

@@ -10,7 +10,7 @@ DATA_PATH = './dataset/gearset/'
 WEIGHT_PATH = './weight/'
 BATCH_SIZE = 16
 NUM_WORKERS = 4
-EPOCH = 10
+EPOCH = 20
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = ResNet()
@@ -111,14 +111,12 @@ if __name__ == "__main__":
         print(f'Epoch:{epoch+1} 完毕|已耗时:{(time()-start_time):.2f}s')
 
         if show_accu[-1] == max(show_accu):
-            torch.save(model.state_dict(), weight_filename(f'epoch{EPOCH}'))
+            accu_str = f'{show_accu[-1]:.3f}'.replace('.', '_')
+            torch.save(model.state_dict(), weight_filename(f'ALL{epoch}NOW{epoch}AC{accu_str}'))
             print("已保存更好的模型")
         else:
             print("该epoch并非最佳模型")
 
-    print(f'最好模型准确率为： {max(show_accu):.3f}')
-
-    accu_str = f'{max(show_accu):.3f}'.replace('.', '_')
-    os.rename(weight_filename(f'epoch{EPOCH}'), weight_filename(f'epoch{epoch}_ac{accu_str}'))
+    print(f'最好模型准确率为： {max(show_accu):.3f}%')
 
     plot_accuracy_figure(show_accu=show_accu)

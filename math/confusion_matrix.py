@@ -8,7 +8,7 @@ from model.model import ResNet
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_PATH = './dataset/gearset/'
-WEIGHT_PATH = './weight/model1_epoch10_ac99_8.pth'
+WEIGHT_PATH = r'weight\2026_4_23\epoch20_8_ac100.pth'
 CLASS_NAME = ['Health', 'Chipped', 'Miss', 'Root', 'Surface']
 
 model = ResNet()
