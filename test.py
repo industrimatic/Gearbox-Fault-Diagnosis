@@ -1,5 +1,2 @@
-a = 'abc'
-
-b = f'{a}de'
-
-print(type(b))
+a = {'key': 1}
+print(a['key'])

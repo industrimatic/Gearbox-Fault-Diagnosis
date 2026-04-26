@@ -1,0 +1,67 @@
+QMainWindow {
+                background-color: #F5F7FA;
+            }
+            QGroupBox {
+                font-size: 15px;
+                font-weight: bold;
+                border: 1px solid #DCDFE6;
+                border-radius: 8px;
+                margin-top: 1.5ex;
+                background-color: white;
+                padding: 15px;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                subcontrol-position: top left;
+                left: 15px;
+                color: #2C3E50;
+            }
+            QPushButton {
+                background-color: #409EFF;
+                color: white;
+                border-radius: 5px;
+                padding: 8px 16px;
+                font-weight: bold;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #66B1FF;
+            }
+            QPushButton:disabled {
+                background-color: #A0CFFF;
+                color: #FFFFFF;
+            }
+            QProgressBar {
+                border: 1px solid #E4E7ED;
+                border-radius: 5px;
+                text-align: center;
+                background-color: #EBEEF5;
+                color: #303133;
+                font-weight: bold;
+            }
+            QProgressBar::chunk {
+                background-color: #67C23A;
+                border-radius: 4px;
+            }
+            QTextEdit {
+                border: 1px solid #DCDFE6;
+                border-radius: 5px;
+                background-color: #F8F9FA;
+                color: #606266;
+                font-family: Consolas, monospace;
+            }
+            #titleLabel {
+                font-size: 24px;
+                font-weight: bold;
+                color: #303133;
+                margin-bottom: 10px;
+            }
+            #resultLabel {
+                font-size: 16px;
+                color: #E6A23C;
+                font-weight: bold;
+                background-color: #FDF6EC;
+                border: 1px solid #FAECD8;
+                border-radius: 5px;
+                padding: 5px;
+            }
