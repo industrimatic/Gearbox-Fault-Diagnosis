@@ -70,20 +70,21 @@ class SEUCWTDataset(Dataset):
         return data_tensor, label_tensor
 
 
-def get_seu_dataloaders(data_dir: str,
-                        batch_size: int = 16,
-                        num_workers: int = 0,
-                        train_start_time: int = 0,
-                        train_end_time: int = 10,
-                        test_start_time: int = 10,
-                        test_end_time: int = 15,
-                        train_stride: int = 128,
-                        test_stride: int = 256,
-                        need_val_dataset: bool = False,
-                        val_start_time: int = 15,
-                        val_end_time: int = 20,
-                        val_stride: int = 256
-                        ):
+def get_seu_dataloaders(
+        data_dir: str,
+        batch_size: int = 16,
+        num_workers: int = 0,
+        train_start_time: int = 0,
+        train_end_time: int = 10,
+        test_start_time: int = 10,
+        test_end_time: int = 15,
+        train_stride: int = 128,
+        test_stride: int = 256,
+        need_val_dataset: bool = False,
+        val_start_time: int = 15,
+        val_end_time: int = 20,
+        val_stride: int = 256
+):
     file_info = [
         ('Health_30_2.csv', 0),
         ('Chipped_30_2.csv', 1),
