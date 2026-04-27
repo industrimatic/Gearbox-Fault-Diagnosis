@@ -19,6 +19,7 @@ class MyWindow(QMainWindow):
         self.form.setupUi(self)
 
         self.bind()
+        self.init_parameters()
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]欢迎使用智能齿轮箱故障诊断系统！')
 
     def bind(self):
@@ -27,9 +28,83 @@ class MyWindow(QMainWindow):
         self.form.pushButton_2.clicked.connect(lambda: self.switch_widget(1))
         self.form.pushButton_3.clicked.connect(lambda: self.switch_widget(2))
         self.form.pushButton_4.clicked.connect(lambda: self.switch_widget(3))
+        self.form.pushButton_6.clicked.connect(lambda: self.switch_widget(4))
+
         # 选择数据集
         self.form.pushButton_5.clicked.connect(self.choose_dataset_file)
         self.form.comboBox.currentTextChanged.connect(self.show_raw_data)
+
+        # 更改参数
+        self.form.spinBox.valueChanged.connect(self.update_parameters_batchsize)
+        self.form.spinBox_2.valueChanged.connect(self.update_parameters_epoch)
+        self.form.spinBox_3.valueChanged.connect(self.update_parameters_TrST)
+        self.form.spinBox_4.valueChanged.connect(self.update_parameters_TrET)
+        self.form.spinBox_5.valueChanged.connect(self.update_parameters_TrS)
+        self.form.spinBox_6.valueChanged.connect(self.update_parameters_TeST)
+        self.form.spinBox_7.valueChanged.connect(self.update_parameters_TeET)
+        self.form.spinBox_8.valueChanged.connect(self.update_parameters_VST)
+        self.form.spinBox_9.valueChanged.connect(self.update_parameters_VET)
+
+    def init_parameters(self):
+
+        self.train_start_time = self.form.spinBox_3.value()
+        self.train_end_time = self.form.spinBox_4.value()
+        self.train_stride = self.form.spinBox_5.value()
+        self.test_start_time = self.form.spinBox_6.value()
+        self.test_end_time = self.form.spinBox_7.value()
+        self.val_start_time = self.form.spinBox_8.value()
+        self.val_end_time = self.form.spinBox_9.value()
+
+        self.batch_size = self.form.spinBox.value()
+        self.epoch = self.form.spinBox_2.value()
+
+    def update_parameters_batchsize(self, value: int):
+        self.batch_size = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新BATCH_SIZE={value}')
+
+    def update_parameters_epoch(self, value: int):
+        self.epoch = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新EPOCH={value}')
+
+    def update_parameters_TrST(self, value: int):
+        self.train_start_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新训练集开始时间={value}s')
+        self.form.spinBox_3.setMaximum(self.form.spinBox_4.value() - 1)
+        self.form.spinBox_4.setMinimum(self.form.spinBox_3.value() + 1)
+
+    def update_parameters_TrET(self, value: int):
+        self.train_end_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新训练集结束时间={value}s')
+        self.form.spinBox_3.setMaximum(self.form.spinBox_4.value() - 1)
+        self.form.spinBox_4.setMinimum(self.form.spinBox_3.value() + 1)
+
+    def update_parameters_TrS(self, value: int):
+        self.train_stride = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新训练集滑窗长度={value}')
+
+    def update_parameters_TeST(self, value: int):
+        self.test_start_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新测试集开始时间={value}s')
+        self.form.spinBox_6.setMaximum(self.form.spinBox_7.value() - 1)
+        self.form.spinBox_7.setMinimum(self.form.spinBox_6.value() + 1)
+
+    def update_parameters_TeET(self, value: int):
+        self.test_end_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新测试集结束时间={value}s')
+        self.form.spinBox_6.setMaximum(self.form.spinBox_7.value() - 1)
+        self.form.spinBox_7.setMinimum(self.form.spinBox_6.value() + 1)
+
+    def update_parameters_VST(self, value: int):
+        self.val_start_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新验证集开始时间={value}s')
+        self.form.spinBox_8.setMaximum(self.form.spinBox_9.value() - 1)
+        self.form.spinBox_9.setMinimum(self.form.spinBox_8.value() + 1)
+
+    def update_parameters_VET(self, value: int):
+        self.val_end_time = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新验证集结束时间={value}s')
+        self.form.spinBox_8.setMaximum(self.form.spinBox_9.value() - 1)
+        self.form.spinBox_9.setMinimum(self.form.spinBox_8.value() + 1)
 
     def switch_widget(self, page_index: int):
 
@@ -49,6 +124,10 @@ class MyWindow(QMainWindow):
             self.form.stackedWidget.setCurrentIndex(3)
             self.form.plainTextEdit.appendPlainText(f'[{current_time()}]切换页面至“模型工作”')
             self.form.label_2.setText('功能区：模型工作')
+        elif page_index == 4:
+            self.form.stackedWidget.setCurrentIndex(4)
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]切换页面至“参数设置”')
+            self.form.label_2.setText('功能区：参数设置')
 
     def choose_dataset_file(self):  # 选择数据集
 
