@@ -370,9 +370,119 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_3)
         self.page_4 = QWidget()
         self.page_4.setObjectName(u"page_4")
-        self.label_6 = QLabel(self.page_4)
+        self.verticalLayout_18 = QVBoxLayout(self.page_4)
+        self.verticalLayout_18.setObjectName(u"verticalLayout_18")
+        self.groupBox_10 = QGroupBox(self.page_4)
+        self.groupBox_10.setObjectName(u"groupBox_10")
+        self.verticalLayout_20 = QVBoxLayout(self.groupBox_10)
+        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
+        self.horizontalLayout_30 = QHBoxLayout()
+        self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
+        self.label_6 = QLabel(self.groupBox_10)
         self.label_6.setObjectName(u"label_6")
-        self.label_6.setGeometry(QRect(160, 180, 53, 15))
+
+        self.horizontalLayout_30.addWidget(self.label_6)
+
+        self.lineEdit_4 = QLineEdit(self.groupBox_10)
+        self.lineEdit_4.setObjectName(u"lineEdit_4")
+
+        self.horizontalLayout_30.addWidget(self.lineEdit_4)
+
+        self.horizontalLayout_30.setStretch(0, 1)
+        self.horizontalLayout_30.setStretch(1, 2)
+
+        self.verticalLayout_20.addLayout(self.horizontalLayout_30)
+
+        self.horizontalLayout_29 = QHBoxLayout()
+        self.horizontalLayout_29.setObjectName(u"horizontalLayout_29")
+        self.label_25 = QLabel(self.groupBox_10)
+        self.label_25.setObjectName(u"label_25")
+
+        self.horizontalLayout_29.addWidget(self.label_25)
+
+        self.lineEdit_5 = QLineEdit(self.groupBox_10)
+        self.lineEdit_5.setObjectName(u"lineEdit_5")
+
+        self.horizontalLayout_29.addWidget(self.lineEdit_5)
+
+        self.horizontalLayout_29.setStretch(0, 1)
+        self.horizontalLayout_29.setStretch(1, 2)
+
+        self.verticalLayout_20.addLayout(self.horizontalLayout_29)
+
+        self.horizontalLayout_28 = QHBoxLayout()
+        self.horizontalLayout_28.setObjectName(u"horizontalLayout_28")
+        self.label_27 = QLabel(self.groupBox_10)
+        self.label_27.setObjectName(u"label_27")
+
+        self.horizontalLayout_28.addWidget(self.label_27)
+
+        self.lineEdit_6 = QLineEdit(self.groupBox_10)
+        self.lineEdit_6.setObjectName(u"lineEdit_6")
+
+        self.horizontalLayout_28.addWidget(self.lineEdit_6)
+
+        self.horizontalLayout_28.setStretch(0, 1)
+        self.horizontalLayout_28.setStretch(1, 2)
+
+        self.verticalLayout_20.addLayout(self.horizontalLayout_28)
+
+        self.horizontalLayout_27 = QHBoxLayout()
+        self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
+        self.pushButton_9 = QPushButton(self.groupBox_10)
+        self.pushButton_9.setObjectName(u"pushButton_9")
+
+        self.horizontalLayout_27.addWidget(self.pushButton_9)
+
+        self.label_26 = QLabel(self.groupBox_10)
+        self.label_26.setObjectName(u"label_26")
+
+        self.horizontalLayout_27.addWidget(self.label_26)
+
+        self.horizontalLayout_27.setStretch(0, 1)
+        self.horizontalLayout_27.setStretch(1, 2)
+
+        self.verticalLayout_20.addLayout(self.horizontalLayout_27)
+
+
+        self.verticalLayout_18.addWidget(self.groupBox_10)
+
+        self.groupBox_11 = QGroupBox(self.page_4)
+        self.groupBox_11.setObjectName(u"groupBox_11")
+        self.verticalLayout_19 = QVBoxLayout(self.groupBox_11)
+        self.verticalLayout_19.setObjectName(u"verticalLayout_19")
+        self.horizontalLayout_26 = QHBoxLayout()
+        self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
+        self.pushButton_10 = QPushButton(self.groupBox_11)
+        self.pushButton_10.setObjectName(u"pushButton_10")
+
+        self.horizontalLayout_26.addWidget(self.pushButton_10)
+
+        self.horizontalSpacer_3 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_26.addItem(self.horizontalSpacer_3)
+
+        self.pushButton_11 = QPushButton(self.groupBox_11)
+        self.pushButton_11.setObjectName(u"pushButton_11")
+
+        self.horizontalLayout_26.addWidget(self.pushButton_11)
+
+        self.horizontalLayout_26.setStretch(0, 2)
+        self.horizontalLayout_26.setStretch(1, 1)
+        self.horizontalLayout_26.setStretch(2, 2)
+
+        self.verticalLayout_19.addLayout(self.horizontalLayout_26)
+
+        self.plainTextEdit_2 = QPlainTextEdit(self.groupBox_11)
+        self.plainTextEdit_2.setObjectName(u"plainTextEdit_2")
+
+        self.verticalLayout_19.addWidget(self.plainTextEdit_2)
+
+
+        self.verticalLayout_18.addWidget(self.groupBox_11)
+
+        self.verticalLayout_18.setStretch(0, 1)
+        self.verticalLayout_18.setStretch(1, 3)
         self.stackedWidget.addWidget(self.page_4)
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
@@ -571,6 +681,23 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_9.addLayout(self.horizontalLayout_6)
 
+        self.horizontalLayout_31 = QHBoxLayout()
+        self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
+        self.label_28 = QLabel(self.groupBox_4)
+        self.label_28.setObjectName(u"label_28")
+
+        self.horizontalLayout_31.addWidget(self.label_28)
+
+        self.spinBox_12 = QSpinBox(self.groupBox_4)
+        self.spinBox_12.setObjectName(u"spinBox_12")
+        self.spinBox_12.setMaximum(4)
+        self.spinBox_12.setValue(4)
+
+        self.horizontalLayout_31.addWidget(self.spinBox_12)
+
+
+        self.verticalLayout_9.addLayout(self.horizontalLayout_31)
+
 
         self.verticalLayout_10.addWidget(self.groupBox_4)
 
@@ -642,7 +769,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(4)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -653,7 +780,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(QCoreApplication.translate("MainWindow", u"\u539f\u59cb\u6570\u636e", None))
         self.pushButton_2.setText(QCoreApplication.translate("MainWindow", u"\u4fe1\u53f7\u5904\u7406", None))
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8bad\u7ec3", None))
-        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u5de5\u4f5c", None))
+        self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8fd0\u884c", None))
         self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"\u53c2\u6570\u8bbe\u7f6e", None))
         self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u529f\u80fd\u533a", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u6570\u636e\u96c6", None))
@@ -692,7 +819,16 @@ class Ui_MainWindow(object):
         self.label_24.setText(QCoreApplication.translate("MainWindow", u"\u9700\u8981\u67e5\u770b\u7684\u901a\u9053\u7f16\u53f7\uff08\u4ece0\u5f00\u59cb\uff09\uff1a", None))
         self.pushButton_8.setText(QCoreApplication.translate("MainWindow", u"\u8fdb\u884c\u5c0f\u6ce2\u53d8\u6362", None))
         self.groupBox_8.setTitle(QCoreApplication.translate("MainWindow", u"\u5de6\uff1a\u539f\u59cb\u4fe1\u53f7\uff0c\u53f3\uff1a\u5c0f\u6ce2\u53d8\u6362\u540e\u4fe1\u53f7", None))
-        self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8bad\u7ec3", None))
+        self.groupBox_10.setTitle(QCoreApplication.translate("MainWindow", u"\u6743\u91cd\u4fdd\u5b58\u8bbe\u7f6e", None))
+        self.label_6.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e\u7684EPOCH\u4e3a:", None))
+        self.label_25.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e\u7684BATCH_SIZE\u4e3a\uff1a", None))
+        self.label_27.setText(QCoreApplication.translate("MainWindow", u"\u8bbe\u7f6e\u4fdd\u5b58\u7684\u6743\u91cd\u540d\u79f0\uff1a", None))
+        self.pushButton_9.setText(QCoreApplication.translate("MainWindow", u"\u9009\u62e9\u4fdd\u5b58\u8def\u5f84", None))
+        self.label_26.setText(QCoreApplication.translate("MainWindow", u"\u672a\u8bbe\u7f6e\u6743\u91cd\u4fdd\u5b58\u8def\u5f84", None))
+        self.groupBox_11.setTitle(QCoreApplication.translate("MainWindow", u"\u8bad\u7ec3\u72b6\u51b5", None))
+        self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u59cb\u8bad\u7ec3", None))
+        self.pushButton_11.setText(QCoreApplication.translate("MainWindow", u"\u7ec8\u6b62\u8bad\u7ec3", None))
+        self.plainTextEdit_2.setPlainText("")
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u5de5\u4f5c", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"\u8bad\u7ec3\u96c6", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"\u91c7\u6837\u5f00\u59cb\u65f6\u95f4(s)", None))
@@ -707,6 +843,7 @@ class Ui_MainWindow(object):
         self.groupBox_4.setTitle(QCoreApplication.translate("MainWindow", u"\u795e\u7ecf\u7f51\u7edc", None))
         self.label_13.setText(QCoreApplication.translate("MainWindow", u"BATCH_SIZE", None))
         self.label_14.setText(QCoreApplication.translate("MainWindow", u"EPOCH", None))
+        self.label_28.setText(QCoreApplication.translate("MainWindow", u"NUM_WORKERS", None))
         self.groupBox_5.setTitle(QCoreApplication.translate("MainWindow", u"\u5173\u4e8e", None))
         self.label_9.setText(QCoreApplication.translate("MainWindow", u"\u9f7f\u8f6e\u7bb1\u6545\u969c\u8bca\u65ad\u7cfb\u7edf 2026\u5317\u4eac\u79d1\u6280\u5927\u5b66\u6bd5\u4e1a\u8bbe\u8ba1", None))
         self.label_10.setText(QCoreApplication.translate("MainWindow", u"MIT License Copyright (c) 2026 Reef", None))

@@ -2,13 +2,17 @@ import os
 import pandas as pd
 import numpy as np
 import pywt
+import torch
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem
 from PySide6.QtCore import QThread, Signal
 from main_window_ui import Ui_MainWindow
 from datetime import datetime
+from time import time
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from dataloader.dataloader import get_seu_dataloaders
+from model.model import ResNet
 
 # use $pyside6-uic '.\GUI\main_window.ui' -o '.\GUI\main_window_ui.py' to compile .ui file
 
@@ -18,12 +22,124 @@ def current_time():
     return datetime.now().strftime("%H:%M:%S")
 
 
+class model_methods():
+
+    def __init__(self):
+
+        self.model = ResNet()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.model.to(device=self.device)
+        self.criterion = torch.nn.CrossEntropyLoss()
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
+
+    def train(self, train_loader):
+        self.model.train()
+        batch_num = len(train_loader)
+        running_loss = 0.0
+
+        for batch_index, (x_data, y_data) in enumerate(train_loader):
+            x_data, y_data = x_data.to(self.device), y_data.to(self.device)
+            # forward
+            y_pred = self.model(x_data)
+            loss = self.criterion(y_pred, y_data)
+            # backward
+            self.optimizer.zero_grad()
+            loss.backward()
+            # update
+            self.optimizer.step()
+
+            running_loss += loss.item()
+            if batch_index % 20 == 19:
+                # print(f'|epoch:{epoch+1}|All Iteration:{batch_num} Now:{batch_index+1}|loss:{running_loss/20}')
+                running_loss = 0.0
+
+    def test(self, test_loader):
+        self.model.eval()
+        correct = 0
+        total = 0
+        with torch.no_grad():
+            for (x_data, y_data) in test_loader:
+                x_data, y_data = x_data.to(self.device), y_data.to(self.device)
+                y_pred = self.model(x_data)
+                _, predicted = torch.max(y_pred.data, dim=1)
+                total += y_data.shape[0]
+                correct += (predicted == y_data).sum().item()
+
+        # print(f'accuracy:{100*correct/total:.3f}%')
+        return 100 * correct / total
+
+    def weight_filename(weight_path: str, file_name: str) -> str:
+
+        # filename:xxx
+        full_name = f'{weight_path}/{file_name}.pth'
+        count = 1
+        while os.path.exists(full_name):
+            full_name = f'{weight_path}/{file_name}_{count}.pth'
+            count += 1
+
+        return full_name
+
+
+class TrainingThread(QThread):
+
+    start_signal = Signal()
+    log_update_signal = Signal(str)
+    end_signal = Signal()
+
+    def __init__(self, label_dic: dict, config: dict):
+        super().__init__()
+        self.model_methods = model_methods()
+        self.data_chosen_dic = label_dic
+        self.config = config
+
+    def run(self):
+
+        self.start_signal.emit()
+
+        start_time = time()
+        train_loader, test_loader = get_seu_dataloaders(
+            self.dataset_path, batch_size=self.batch_size, num_workers=self.num_workers,
+            train_start_time=self.train_start_time, train_end_time=self.train_end_time,
+            train_stride=self.train_stride, test_start_time=self.test_start_time,
+            test_end_time=self.test_end_time, val_start_time=self.val_start_time,
+            val_end_time=self.val_end_time, need_val_dataset=False
+        )
+        missing_dataset_list = []
+        for key, value in self.data_chosen_dic.items():
+            if value == False:
+                missing_dataset_list.append(key)
+
+        if missing_dataset_list == []:
+            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，全部标签都加载成功，总 Batch 数：{len(train_loader)}|Cost:{time()-start_time:.2f}")
+        else:
+            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，以下标签加载失败:{missing_dataset_list}，总 Batch 数：{len(train_loader)}|Cost:{time()-start_time:.2f}")
+
+        # -----------------------
+        show_accu = []
+
+        for epoch in range(self.epoch):
+            self.model_methods.train(train_loader)
+            show_accu.append(self.model_methods.test(test_loader))
+            self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]|Now:{epoch}/{self.epoch}|Cost:{time()-start_time:.2f}')
+
+            if show_accu[-1] == max(show_accu):
+                accu_str = f'{show_accu[-1]:.3f}'.replace('.', '_')
+                weight_fullpath_now = self.model_methods.weight_filename(self.weight_savepath, self.weight_name)
+                torch.save(self.model.state_dict(), weight_fullpath_now)
+                self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]已保存模型{weight_fullpath_now}|准确率：{accu_str}")
+            else:
+                self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]该轮模型并非最佳模型")
+
+        self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]训练结束')
+
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.form = Ui_MainWindow()
         self.form.setupUi(self)
+        self.model_methods = model_methods()
 
         self.bind()
         self.init_parameters()
@@ -48,6 +164,7 @@ class MyWindow(QMainWindow):
         # 更改参数
         self.form.spinBox.valueChanged.connect(self.update_parameters_batchsize)
         self.form.spinBox_2.valueChanged.connect(self.update_parameters_epoch)
+        self.form.spinBox_12.valueChanged.connect(self.update_parameters_numworkers)
         self.form.spinBox_3.valueChanged.connect(self.update_parameters_TrST)
         self.form.spinBox_4.valueChanged.connect(self.update_parameters_TrET)
         self.form.spinBox_5.valueChanged.connect(self.update_parameters_TrS)
@@ -62,7 +179,20 @@ class MyWindow(QMainWindow):
         # 展示变换后图像
         self.form.pushButton_8.clicked.connect(self.walvelet_transform)
 
+        # 获取权重保存名称
+        self.form.lineEdit_6.textChanged.connect(self.get_weight_name)
+
+        # 选择权重保存路径
+        self.form.pushButton_9.clicked.connect(self.get_weight_savepath)
+
+        # 开始训练
+        self.form.pushButton_10.clicked.connect(self.start_train)
+
     def init_parameters(self):
+
+        self.weight_name = ''
+        self.weight_savepath = ''
+        self.dataset_path = ''
 
         self.train_start_time = self.form.spinBox_3.value()
         self.train_end_time = self.form.spinBox_4.value()
@@ -74,8 +204,11 @@ class MyWindow(QMainWindow):
 
         self.batch_size = self.form.spinBox.value()
         self.epoch = self.form.spinBox_2.value()
+        self.num_workers = self.form.spinBox_12.value()
 
         self.form.lineEdit.setText(str(self.train_stride))
+        self.form.lineEdit_4.setText(str(self.epoch))
+        self.form.lineEdit_5.setText(str(self.batch_size))
 
     def clear_console(self):
         self.form.plainTextEdit.clear()
@@ -312,13 +445,95 @@ class MyWindow(QMainWindow):
         self.fig.suptitle(f'Label:{label},Sample:{self.form.spinBox_10.value()},Channel:{channel}')
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]生成图像：Label:{label},Sample:{self.form.spinBox_10.value()},Channel:{channel}')
 
+    def get_weight_name(self, name: str):
+        self.weight_name = name
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]修改权重名称')
+
+    def get_weight_savepath(self):
+        self.weight_savepath = QFileDialog.getExistingDirectory(self, "选择权重文件夹")
+        self.form.label_26.setText(f'已选中权重保存地址：{self.weight_savepath}')
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已选择权重保存地址')
+
+    def start_train(self):
+
+        if self.weight_name == '':
+            self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]警告：无法开始训练，未定义权重名称")
+            return
+        if self.weight_savepath == '':
+            self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]警告：无法开始训练，未定义权重保存路径")
+            return
+        if self.dataset_path == '':
+            self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]警告：无法开始训练，未定义数据集路径")
+            return
+
+        self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]注意：训练开始，参数设置会被冻结')
+        self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]正在加载数据...')
+        # -----------------------
+        # i should use config dict earlier :(
+        config = {
+            'weight_name': self.weight_name,
+            'weight_savepath': self.weight_savepath,
+            'dataset_path': self.dataset_path,
+            'train_start_time': self.train_start_time,
+            'train_end_time': self.train_end_time,
+            'train_stride': self.train_stride,
+            'test_start_time': self.test_start_time,
+            'test_end_time': self.test_end_time,
+            'val_start_time': self.val_start_time,
+            'val_end_time': self.val_end_time,
+            'batch_size': self.batch_size,
+            'epoch': self.epoch,
+            'num_workers': self.num_workers
+        }
+
+        # train_loader, test_loader = get_seu_dataloaders(
+        #     self.dataset_path, batch_size=self.batch_size, num_workers=self.num_workers,
+        #     train_start_time=self.train_start_time, train_end_time=self.train_end_time,
+        #     train_stride=self.train_stride, test_start_time=self.test_start_time,
+        #     test_end_time=self.test_end_time, val_start_time=self.val_start_time,
+        #     val_end_time=self.val_end_time, need_val_dataset=False
+        # )
+        # missing_dataset_list = []
+        # for key, value in self.data_chosen_dic.items():
+        #     if value == False:
+        #         missing_dataset_list.append(key)
+
+        # if missing_dataset_list == []:
+        #     self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]数据集加载完成，全部标签都加载成功，总 Batch 数：{len(train_loader)}|Cost:{time()-start_time:.2f}")
+        # else:
+        #     self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]数据集加载完成，以下标签加载失败:{missing_dataset_list}，总 Batch 数：{len(train_loader)}|Cost:{time()-start_time:.2f}")
+
+        # # -----------------------
+        # show_accu = []
+
+        # for epoch in range(self.epoch):
+        #     self.model_methods.train(train_loader)
+        #     show_accu.append(self.model_methods.test(test_loader))
+        #     self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]|Now:{epoch}/{self.epoch}|Cost:{time()-start_time:.2f}')
+
+        #     if show_accu[-1] == max(show_accu):
+        #         accu_str = f'{show_accu[-1]:.3f}'.replace('.', '_')
+        #         weight_fullpath_now = self.model_methods.weight_filename(self.weight_savepath, self.weight_name)
+        #         torch.save(self.model.state_dict(), weight_fullpath_now)
+        #         self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]已保存模型{weight_fullpath_now}|准确率：{accu_str}")
+        #     else:
+        #         self.form.plainTextEdit_2.appendPlainText(f"[{current_time()}]该轮模型并非最佳模型")
+
+        # self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]训练结束')
+
     def update_parameters_batchsize(self, value: int):
         self.batch_size = value
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新BATCH_SIZE={value}')
+        self.form.lineEdit_5.setText(str(self.batch_size))
 
     def update_parameters_epoch(self, value: int):
         self.epoch = value
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新EPOCH={value}')
+        self.form.lineEdit_4.setText(str(self.epoch))
+
+    def update_parameters_numworkers(self, value: int):
+        self.num_workers = value
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新NUM_WORKERS={value}')
 
     def update_parameters_TrST(self, value: int):
         self.train_start_time = value
