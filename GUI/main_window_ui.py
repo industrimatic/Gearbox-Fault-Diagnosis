@@ -385,6 +385,7 @@ class Ui_MainWindow(object):
 
         self.lineEdit_4 = QLineEdit(self.groupBox_10)
         self.lineEdit_4.setObjectName(u"lineEdit_4")
+        self.lineEdit_4.setReadOnly(True)
 
         self.horizontalLayout_30.addWidget(self.lineEdit_4)
 
@@ -402,6 +403,7 @@ class Ui_MainWindow(object):
 
         self.lineEdit_5 = QLineEdit(self.groupBox_10)
         self.lineEdit_5.setObjectName(u"lineEdit_5")
+        self.lineEdit_5.setReadOnly(True)
 
         self.horizontalLayout_29.addWidget(self.lineEdit_5)
 
@@ -769,7 +771,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(4)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
