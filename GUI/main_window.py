@@ -23,7 +23,6 @@ def current_time():
 
 
 class model_methods():
-
     def __init__(self):
 
         self.model = ResNet()
@@ -93,6 +92,10 @@ class TrainingThread(QThread):
         self.model_methods = model_methods
         self.data_chosen_dic = label_dic
         self.config = config
+        self.running_flag = True
+
+    def stop(self):
+        self.running_flag = False
 
     def run(self):
 
@@ -119,17 +122,22 @@ class TrainingThread(QThread):
         show_accu = []
 
         for epoch in range(c['epoch']):
-            self.model_methods.train(train_loader, log_handler=self.log_update_signal.emit)
-            show_accu.append(self.model_methods.test(test_loader))
-            self.log_update_signal.emit(f'[{current_time()}]EPOCH:{epoch+1}/{c["epoch"]} | 准确率：{show_accu[-1]:.3f}% | Cost:{time()-start_time:.2f}s')
 
-            if show_accu[-1] == max(show_accu):
-                accu_str = f'{show_accu[-1]:.3f}%'
-                weight_fullpath_now = self.model_methods.weight_filename(c['weight_savepath'], c['weight_name'])
-                torch.save(self.model_methods.model.state_dict(), weight_fullpath_now)
-                self.log_update_signal.emit(f"[{current_time()}]已保存模型{weight_fullpath_now}|准确率：{accu_str}")
+            if self.running_flag == False:
+                self.log_update_signal.emit(f'[{current_time()}]训练过程被手动停止')
+                break
             else:
-                self.log_update_signal.emit(f"[{current_time()}]该轮模型并非最佳模型")
+                self.model_methods.train(train_loader, log_handler=self.log_update_signal.emit)
+                show_accu.append(self.model_methods.test(test_loader))
+                self.log_update_signal.emit(f'[{current_time()}]EPOCH:{epoch+1}/{c["epoch"]} | 准确率：{show_accu[-1]:.3f}% | Cost:{time()-start_time:.2f}s')
+
+                if show_accu[-1] == max(show_accu):
+                    accu_str = f'{show_accu[-1]:.3f}%'
+                    weight_fullpath_now = self.model_methods.weight_filename(c['weight_savepath'], c['weight_name'])
+                    torch.save(self.model_methods.model.state_dict(), weight_fullpath_now)
+                    self.log_update_signal.emit(f"[{current_time()}]权重保存在{weight_fullpath_now}|准确率：{accu_str}")
+                else:
+                    self.log_update_signal.emit(f"[{current_time()}]该轮模型并非最佳模型")
 
         self.log_update_signal.emit(f'[{current_time()}]训练结束')
         self.end_signal.emit()
@@ -186,8 +194,9 @@ class MyWindow(QMainWindow):
         # 选择权重保存路径
         self.form.pushButton_9.clicked.connect(self.get_weight_savepath)
 
-        # 开始训练
+        # 开始训练与结束训练
         self.form.pushButton_10.clicked.connect(self.start_train)
+        self.form.pushButton_11.clicked.connect(self.stop_training)
 
     def init_parameters(self):
 
@@ -494,11 +503,18 @@ class MyWindow(QMainWindow):
         self.training_thread.end_signal.connect(self.training_end)
         self.training_thread.start()
 
+    def stop_training(self):
+        if hasattr(self, 'training_thread') and self.training_thread.running_flag == True:
+            self.training_thread.stop()
+            self.form.pushButton_11.setEnabled(False)
+            self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]注意：训练被手动停止，该轮epoch结束后训练结束')
+
     def training_log_update(self, text: str):
         self.form.plainTextEdit_2.appendPlainText(text)
 
     def training_end(self):
         self.form.pushButton_10.setEnabled(True)
+        self.form.pushButton_11.setEnabled(True)
 
     def update_parameters_batchsize(self, value: int):
         self.batch_size = value
