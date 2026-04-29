@@ -477,6 +477,7 @@ class Ui_MainWindow(object):
 
         self.plainTextEdit_2 = QPlainTextEdit(self.groupBox_11)
         self.plainTextEdit_2.setObjectName(u"plainTextEdit_2")
+        self.plainTextEdit_2.setReadOnly(True)
 
         self.verticalLayout_19.addWidget(self.plainTextEdit_2)
 
@@ -488,9 +489,98 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.page_4)
         self.page_2 = QWidget()
         self.page_2.setObjectName(u"page_2")
-        self.label_4 = QLabel(self.page_2)
+        self.verticalLayout_21 = QVBoxLayout(self.page_2)
+        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
+        self.groupBox_12 = QGroupBox(self.page_2)
+        self.groupBox_12.setObjectName(u"groupBox_12")
+        self.verticalLayout_25 = QVBoxLayout(self.groupBox_12)
+        self.verticalLayout_25.setObjectName(u"verticalLayout_25")
+        self.horizontalLayout_34 = QHBoxLayout()
+        self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
+        self.pushButton_12 = QPushButton(self.groupBox_12)
+        self.pushButton_12.setObjectName(u"pushButton_12")
+
+        self.horizontalLayout_34.addWidget(self.pushButton_12)
+
+        self.label_4 = QLabel(self.groupBox_12)
         self.label_4.setObjectName(u"label_4")
-        self.label_4.setGeometry(QRect(130, 140, 181, 81))
+
+        self.horizontalLayout_34.addWidget(self.label_4)
+
+        self.horizontalLayout_34.setStretch(0, 1)
+        self.horizontalLayout_34.setStretch(1, 3)
+
+        self.verticalLayout_25.addLayout(self.horizontalLayout_34)
+
+        self.line_3 = QFrame(self.groupBox_12)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setFrameShape(QFrame.HLine)
+        self.line_3.setFrameShadow(QFrame.Sunken)
+
+        self.verticalLayout_25.addWidget(self.line_3)
+
+        self.horizontalLayout_33 = QHBoxLayout()
+        self.horizontalLayout_33.setObjectName(u"horizontalLayout_33")
+        self.groupBox_14 = QGroupBox(self.groupBox_12)
+        self.groupBox_14.setObjectName(u"groupBox_14")
+        font = QFont()
+        font.setKerning(True)
+        self.groupBox_14.setFont(font)
+        self.groupBox_14.setFlat(False)
+        self.groupBox_14.setCheckable(False)
+        self.verticalLayout_24 = QVBoxLayout(self.groupBox_14)
+        self.verticalLayout_24.setObjectName(u"verticalLayout_24")
+        self.verticalLayout_23 = QVBoxLayout()
+        self.verticalLayout_23.setObjectName(u"verticalLayout_23")
+
+        self.verticalLayout_24.addLayout(self.verticalLayout_23)
+
+
+        self.horizontalLayout_33.addWidget(self.groupBox_14)
+
+        self.verticalLayout_22 = QVBoxLayout()
+        self.verticalLayout_22.setObjectName(u"verticalLayout_22")
+        self.horizontalLayout_32 = QHBoxLayout()
+        self.horizontalLayout_32.setObjectName(u"horizontalLayout_32")
+        self.pushButton_13 = QPushButton(self.groupBox_12)
+        self.pushButton_13.setObjectName(u"pushButton_13")
+
+        self.horizontalLayout_32.addWidget(self.pushButton_13)
+
+        self.pushButton_14 = QPushButton(self.groupBox_12)
+        self.pushButton_14.setObjectName(u"pushButton_14")
+
+        self.horizontalLayout_32.addWidget(self.pushButton_14)
+
+        self.horizontalLayout_32.setStretch(0, 1)
+        self.horizontalLayout_32.setStretch(1, 1)
+
+        self.verticalLayout_22.addLayout(self.horizontalLayout_32)
+
+        self.plainTextEdit_3 = QPlainTextEdit(self.groupBox_12)
+        self.plainTextEdit_3.setObjectName(u"plainTextEdit_3")
+        self.plainTextEdit_3.setReadOnly(True)
+
+        self.verticalLayout_22.addWidget(self.plainTextEdit_3)
+
+
+        self.horizontalLayout_33.addLayout(self.verticalLayout_22)
+
+        self.horizontalLayout_33.setStretch(0, 1)
+        self.horizontalLayout_33.setStretch(1, 1)
+
+        self.verticalLayout_25.addLayout(self.horizontalLayout_33)
+
+
+        self.verticalLayout_21.addWidget(self.groupBox_12)
+
+        self.groupBox_13 = QGroupBox(self.page_2)
+        self.groupBox_13.setObjectName(u"groupBox_13")
+
+        self.verticalLayout_21.addWidget(self.groupBox_13)
+
+        self.verticalLayout_21.setStretch(0, 1)
+        self.verticalLayout_21.setStretch(1, 1)
         self.stackedWidget.addWidget(self.page_2)
         self.page_5 = QWidget()
         self.page_5.setObjectName(u"page_5")
@@ -756,6 +846,7 @@ class Ui_MainWindow(object):
 
         self.plainTextEdit = QPlainTextEdit(self.centralwidget)
         self.plainTextEdit.setObjectName(u"plainTextEdit")
+        self.plainTextEdit.setReadOnly(True)
 
         self.verticalLayout_2.addWidget(self.plainTextEdit)
 
@@ -771,7 +862,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(2)
+        self.stackedWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -831,7 +922,13 @@ class Ui_MainWindow(object):
         self.pushButton_10.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u59cb\u8bad\u7ec3", None))
         self.pushButton_11.setText(QCoreApplication.translate("MainWindow", u"\u7ec8\u6b62\u8bad\u7ec3", None))
         self.plainTextEdit_2.setPlainText("")
-        self.label_4.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u5de5\u4f5c", None))
+        self.groupBox_12.setTitle(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8bc4\u4f30", None))
+        self.pushButton_12.setText(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u6743\u91cd", None))
+        self.label_4.setText(QCoreApplication.translate("MainWindow", u"\u672a\u9009\u62e9\u6743\u91cd\u6587\u4ef6", None))
+        self.groupBox_14.setTitle(QCoreApplication.translate("MainWindow", u"\u6df7\u6dc6\u77e9\u9635", None))
+        self.pushButton_13.setText(QCoreApplication.translate("MainWindow", u"\u5f00\u59cb\u8bc4\u4f30", None))
+        self.pushButton_14.setText(QCoreApplication.translate("MainWindow", u"\u7ec8\u6b62\u8bc4\u4f30", None))
+        self.groupBox_13.setTitle(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u5de5\u4f5c", None))
         self.groupBox_3.setTitle(QCoreApplication.translate("MainWindow", u"\u8bad\u7ec3\u96c6", None))
         self.label_11.setText(QCoreApplication.translate("MainWindow", u"\u91c7\u6837\u5f00\u59cb\u65f6\u95f4(s)", None))
         self.label_12.setText(QCoreApplication.translate("MainWindow", u"\u91c7\u6837\u7ed3\u675f\u65f6\u95f4(s)", None))

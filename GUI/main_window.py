@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import pywt
 import torch
+import seaborn as sns
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem
 from PySide6.QtCore import QThread, Signal
@@ -13,6 +14,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from dataloader.dataloader import get_seu_dataloaders
 from model.model import ResNet
+from sklearn.metrics import confusion_matrix
 
 # use $pyside6-uic '.\GUI\main_window.ui' -o '.\GUI\main_window_ui.py' to compile .ui file
 
@@ -31,7 +33,7 @@ class model_methods():
         self.criterion = torch.nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
 
-    def train(self, train_loader, log_handler=None):
+    def train(self, train_loader, start_time, log_handler=None):
         self.model.train()
         batch_num = len(train_loader)
         running_loss = 0.0
@@ -49,7 +51,7 @@ class model_methods():
 
             running_loss += loss.item()
             if batch_index % 20 == 19:
-                text = f'[{current_time()}]Iteration:{batch_index+1}/{batch_num} | Loss:{running_loss/20}'
+                text = f'[{current_time()}]Iteration:{batch_index+1}/{batch_num} | Loss:{running_loss/20} | 已花费时间：{time()-start_time:.2f}'
                 if log_handler is not None:
                     log_handler(text)
                 running_loss = 0.0
@@ -101,7 +103,8 @@ class TrainingThread(QThread):
 
         self.start_signal.emit()
         c = self.config
-        start_time = time()
+
+        self.log_update_signal.emit(f'[{current_time()}]读取数据集中...')
         train_loader, test_loader = get_seu_dataloaders(
             c['dataset_path'], batch_size=c['batch_size'], num_workers=c['num_workers'],
             train_start_time=c['train_start_time'], train_end_time=c['train_end_time'],
@@ -109,15 +112,17 @@ class TrainingThread(QThread):
             test_end_time=c['test_end_time'], val_start_time=c['val_start_time'],
             val_end_time=c['val_end_time'], need_val_dataset=False
         )
+
+        start_time = time()
         missing_dataset_list = []
         for key, value in self.data_chosen_dic.items():
             if value == False:
                 missing_dataset_list.append(key)
 
         if missing_dataset_list == []:
-            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，全部标签都加载成功，总 Batch 数:{len(train_loader)} | Cost:{time()-start_time:.2f}s")
+            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，全部标签都加载成功，总 Batch 数:{len(train_loader)} | 已花费时间:{time()-start_time:.2f}s")
         else:
-            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，以下标签加载失败:{missing_dataset_list}，总 Batch 数：{len(train_loader)}|Cost:{time()-start_time:.2f}s")
+            self.log_update_signal.emit(f"[{current_time()}]数据集加载完成，以下标签加载失败:{missing_dataset_list}，总 Batch 数：{len(train_loader)} | 已花费时间:{time()-start_time:.2f}s")
 
         show_accu = []
 
@@ -127,9 +132,9 @@ class TrainingThread(QThread):
                 self.log_update_signal.emit(f'[{current_time()}]训练过程被手动停止')
                 break
             else:
-                self.model_methods.train(train_loader, log_handler=self.log_update_signal.emit)
+                self.model_methods.train(train_loader, log_handler=self.log_update_signal.emit, start_time=start_time)
                 show_accu.append(self.model_methods.test(test_loader))
-                self.log_update_signal.emit(f'[{current_time()}]EPOCH:{epoch+1}/{c["epoch"]} | 准确率：{show_accu[-1]:.3f}% | Cost:{time()-start_time:.2f}s')
+                self.log_update_signal.emit(f'[{current_time()}]EPOCH:{epoch+1}/{c["epoch"]} | 准确率：{show_accu[-1]:.3f}% | 已花费时间：{time()-start_time:.2f}s')
 
                 if show_accu[-1] == max(show_accu):
                     accu_str = f'{show_accu[-1]:.3f}%'
@@ -143,6 +148,57 @@ class TrainingThread(QThread):
         self.end_signal.emit()
 
 
+class ConfusionMatrixThread(QThread):
+
+    log_update_signal = Signal(str)
+    matrix_ready_signal = Signal(np.ndarray)
+    end_signal = Signal()
+
+    def __init__(self, model_methods: model_methods, config, val_weight_path):
+        super().__init__()
+        self.model_methods = model_methods
+        self.config = config
+        self.val_weight_path = val_weight_path
+        self.running_flag = True
+
+    def run(self):
+
+        c = self.config
+
+        self.model_methods.model.load_state_dict(torch.load(self.val_weight_path, map_location=self.model_methods.device))
+        self.model_methods.model.to(self.model_methods.device)
+        self.model_methods.model.eval()
+
+        self.log_update_signal.emit(f'[{current_time()}]读取数据集中...')
+        _, _, val_loader = get_seu_dataloaders(data_dir=c['dataset_path'], need_val_dataset=True,
+                                               val_start_time=c['val_start_time'], val_end_time=c['val_end_time'])
+        self.log_update_signal.emit(f'[{current_time()}]数据集加载完毕')
+
+        all_iteration = len(val_loader)
+        all_preds = []
+        all_labels = []
+        start_time = time()
+        with torch.no_grad():
+            for iteration_index, (x_data, y_data) in enumerate(val_loader):
+                if self.running_flag == True:
+                    x_data = x_data.to(self.model_methods.device)
+                    y_data = y_data.to(self.model_methods.device)
+
+                    outputs = self.model_methods.model(x_data)
+                    _, preds = torch.max(outputs, dim=1)
+
+                    all_preds.extend(preds.tolist())
+                    all_labels.extend(y_data.tolist())
+                    if iteration_index % 5 == 4:
+                        self.log_update_signal.emit(f'[{current_time()}]Now: {iteration_index+1}/{all_iteration} | 已花费时间:{time()-start_time:.2f}s')
+                else:
+                    break
+
+        matrix = confusion_matrix(all_labels, all_preds)
+        self.end_signal.emit()
+        self.matrix_ready_signal.emit(matrix)
+
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -153,6 +209,9 @@ class MyWindow(QMainWindow):
         self.bind()
         self.init_parameters()
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]欢迎使用智能齿轮箱故障诊断系统！')
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]该界面为全局控制台')
+        self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]该界面为模型训练控制台')
+        self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]该界面为模型评估控制台')
 
     def bind(self):
 
@@ -198,11 +257,19 @@ class MyWindow(QMainWindow):
         self.form.pushButton_10.clicked.connect(self.start_train)
         self.form.pushButton_11.clicked.connect(self.stop_training)
 
+        # 选择权重文件
+        self.form.pushButton_12.clicked.connect(self.get_evaluate_weight_path)
+
+        # 开始评估与结束评估
+        self.form.pushButton_13.clicked.connect(self.start_draw_confusion_matrix)
+        self.form.pushButton_14.clicked.connect(self.stop_evaluate_thread)
+
     def init_parameters(self):
 
         self.weight_name = ''
         self.weight_savepath = ''
         self.dataset_path = ''
+        self.evaluate_weight_path = ''
 
         self.train_start_time = self.form.spinBox_3.value()
         self.train_end_time = self.form.spinBox_4.value()
@@ -453,6 +520,8 @@ class MyWindow(QMainWindow):
 
         self.fig.colorbar(im, ax=ax2, pad=0.05, fraction=0.05)
         self.fig.suptitle(f'Label:{label},Sample:{self.form.spinBox_10.value()},Channel:{channel}')
+        self.canvas.draw()
+
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]生成图像：Label:{label},Sample:{self.form.spinBox_10.value()},Channel:{channel}')
 
     def get_weight_name(self, name: str):
@@ -515,6 +584,72 @@ class MyWindow(QMainWindow):
     def training_end(self):
         self.form.pushButton_10.setEnabled(True)
         self.form.pushButton_11.setEnabled(True)
+
+# ----------模型运行界面-------------
+
+    def get_evaluate_weight_path(self):
+        self.evaluate_weight_path = QFileDialog.getOpenFileName(self, "选择权重文件", "", "PyTorch Weights(*.pth)")[0]
+        self.form.label_4.setText(f'已选中权重文件：{self.evaluate_weight_path}')
+        self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]已选择要评估的权重')
+
+    def start_draw_confusion_matrix(self):
+
+        if self.evaluate_weight_path == '':
+            self.form.plainTextEdit_3.appendPlainText(f"[{current_time()}]警告：无法开始评估，未选择权重路径")
+            return
+        if self.dataset_path == '':
+            self.form.plainTextEdit_3.appendPlainText(f"[{current_time()}]警告：无法开始评估，未选择数据集路径")
+            return
+
+        self.form.pushButton_13.setEnabled(False)
+
+        config = {
+            'val_start_time': self.val_start_time,
+            'val_end_time': self.val_end_time,
+            'dataset_path': self.dataset_path,
+        }
+        self.evaluate_thread = ConfusionMatrixThread(self.model_methods, config, self.evaluate_weight_path)
+        self.evaluate_thread.matrix_ready_signal.connect(self.draw_confusion_matrix)
+        self.evaluate_thread.log_update_signal.connect(self.evaluate_log_update)
+        self.evaluate_thread.end_signal.connect(self.val_end)
+        self.evaluate_thread.start()
+
+    def draw_confusion_matrix(self, matrix):
+
+        while self.form.verticalLayout_23.count():
+            item = self.form.verticalLayout_23.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        CLASS_NAME = [key for key, val in self.data_chosen_dic.items() if val == True]
+
+        self.cm_fig = Figure(figsize=(6, 5), tight_layout=True)
+        self.cm_canvas = FigureCanvas(self.cm_fig)
+        self.form.verticalLayout_23.addWidget(self.cm_canvas)
+        ax = self.cm_fig.add_subplot(111)
+
+        sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues',
+                    xticklabels=CLASS_NAME, yticklabels=CLASS_NAME, ax=ax)
+
+        ax.set_title("Confusion Matrix")
+        ax.set_ylabel("True Label")
+        ax.set_xlabel("Predicted Label")
+        self.cm_canvas.draw()
+
+    def evaluate_log_update(self, text):
+        self.form.plainTextEdit_3.appendPlainText(text)
+
+    def stop_evaluate_thread(self):
+        if hasattr(self, 'evaluate_thread') and self.evaluate_thread.running_flag:
+            self.form.pushButton_14.setEnabled(False)
+            self.evaluate_thread.running_flag = False
+            self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]注意：评估被手动停止，该轮结束后训练评估')
+
+    def val_end(self):
+        self.form.pushButton_13.setEnabled(True)
+        self.form.pushButton_14.setEnabled(True)
+        self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]评估结束，已显示混淆矩阵')
 
     def update_parameters_batchsize(self, value: int):
         self.batch_size = value
