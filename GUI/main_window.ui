@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1033</width>
-    <height>730</height>
+    <width>1230</width>
+    <height>896</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,14 +66,14 @@
       <item>
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>功能区</string>
+         <string>功能区：原始数据</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QStackedWidget" name="stackedWidget">
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="page">
          <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,5">

@@ -1,77 +1,181 @@
-QMainWindow {
-    background-color: #F5F7FA;
+/* 全局基础设置：保持护眼的浅灰背景 */
+QWidget {
+    background-color: #F8F9FA;
+    color: #343A40;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    font-size: 10pt;
 }
 
-QGroupBox {
-    font-size: 16px;
+/* 左侧导航栏按钮 (菜单切换) */
+QPushButton#pushButton,
+QPushButton#pushButton_2,
+QPushButton#pushButton_3,
+QPushButton#pushButton_4,
+QPushButton#pushButton_6 {
+    background-color: #FFFFFF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
+    padding: 10px 15px;
     font-weight: bold;
-    border: 1px solid #DCDFE6;
+    color: #495057;
+    text-align: center;
+}
+
+QPushButton#pushButton:hover,
+QPushButton#pushButton_2:hover,
+QPushButton#pushButton_3:hover,
+QPushButton#pushButton_4:hover,
+QPushButton#pushButton_6:hover {
+    background-color: #F1F3F5;
+    border: 1px solid #ADB5BD;
+}
+
+QPushButton#pushButton:pressed,
+QPushButton#pushButton_2:pressed,
+QPushButton#pushButton_3:pressed,
+QPushButton#pushButton_4:pressed,
+QPushButton#pushButton_6:pressed {
+    background-color: #E9ECEF;
+    border: 2px solid #4A90E2;
+    /* 点击时带有清爽的蓝色边框 */
+    color: #212529;
+}
+
+/* 分割线和功能区标题 */
+QLabel#label_2 {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #2C3E50;
+    /* 加深标题颜色，增加层级感 */
+    padding-bottom: 6px;
+    border-bottom: 2px solid #CED4DA;
+}
+
+/* 所有的 GroupBox (模块分组框) */
+QGroupBox {
+    border: 1px solid #E9ECEF;
     border-radius: 8px;
-    margin-top: 1.5ex;
-    background-color: white;
-    padding: 15px;
+    margin-top: 15px;
+    background-color: #FFFFFF;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     left: 15px;
-    color: #2C3E50;
+    padding: 0 5px;
+    color: #495057;
+    font-weight: bold;
+    background-color: #FFFFFF;
 }
 
+/* 所有的普通操作按钮 (提亮蓝色，清爽专业) */
 QPushButton {
-    background-color: #409EFF;
-    color: white;
-    border-radius: 5px;
-    padding: 8px 16px;
-    font-weight: bold;
+    background-color: #4A90E2;
+    /* 经典的清爽学术蓝 */
+    color: #FFFFFF;
     border: none;
+    border-radius: 5px;
+    padding: 6px 14px;
+    font-weight: bold;
 }
 
 QPushButton:hover {
-    background-color: #66B1FF;
+    background-color: #357ABD;
+    /* 稍微加深的交互反馈 */
+}
+
+QPushButton:pressed {
+    background-color: #2A629A;
 }
 
 QPushButton:disabled {
-    background-color: #A0CFFF;
+    background-color: #D3E0EA;
+    /* 禁用状态用极浅的蓝灰 */
     color: #FFFFFF;
 }
 
-QProgressBar {
-    border: 1px solid #E4E7ED;
-    border-radius: 5px;
-    text-align: center;
-    background-color: #EBEEF5;
-    color: #303133;
-    font-weight: bold;
+/* 停止/终止 类危险操作按钮 (提亮红色，清晰不刺眼) */
+QPushButton#pushButton_11,
+QPushButton#pushButton_14,
+QPushButton#pushButton_16,
+QPushButton#pushButton_7 {
+    background-color: #E26A6A;
+    /* 舒适的玫瑰红/珊瑚红 */
+    color: white;
 }
 
-QProgressBar::chunk {
-    background-color: #67C23A;
+QPushButton#pushButton_11:hover,
+QPushButton#pushButton_14:hover,
+QPushButton#pushButton_16:hover,
+QPushButton#pushButton_7:hover {
+    background-color: #C95353;
+}
+
+QPushButton#pushButton_11:pressed,
+QPushButton#pushButton_14:pressed,
+QPushButton#pushButton_16:pressed,
+QPushButton#pushButton_7:pressed {
+    background-color: #AD4040;
+}
+
+QPushButton#pushButton_11:disabled,
+QPushButton#pushButton_14:disabled,
+QPushButton#pushButton_16:disabled {
+    background-color: #F1BABA;
+}
+
+/* 输入框和数值调节框 */
+QLineEdit,
+QSpinBox,
+QComboBox {
+    border: 1px solid #CED4DA;
     border-radius: 4px;
+    padding: 5px 8px;
+    background-color: #FFFFFF;
+    color: #495057;
 }
 
-QTextEdit {
-    border: 1px solid #DCDFE6;
-    border-radius: 5px;
+QLineEdit:focus,
+QSpinBox:focus,
+QComboBox:focus {
+    border: 1px solid #4A90E2;
+    /* 焦点状态使用主题蓝 */
+}
+
+QLineEdit:read-only {
     background-color: #F8F9FA;
-    color: #606266;
-    font-family: Consolas, monospace;
+    color: #ADB5BD;
 }
 
-#titleLabel {
-    font-size: 24px;
-    font-weight: bold;
-    color: #303133;
-    margin-bottom: 10px;
+/* 数据表格显示 */
+QTableWidget {
+    background-color: #FFFFFF;
+    alternate-background-color: #F8F9FA;
+    gridline-color: #E9ECEF;
+    border: 1px solid #DEE2E6;
+    border-radius: 6px;
 }
 
-#resultLabel {
-    font-size: 16px;
-    color: #E6A23C;
+QHeaderView::section {
+    background-color: #F1F3F5;
     font-weight: bold;
-    background-color: #FDF6EC;
-    border: 1px solid #FAECD8;
-    border-radius: 5px;
+    color: #495057;
+    border: none;
+    border-right: 1px solid #DEE2E6;
+    border-bottom: 1px solid #DEE2E6;
     padding: 5px;
+}
+
+/* 控制台富文本框 (干净的浅色风格) */
+QPlainTextEdit {
+    background-color: #FFFFFF;
+    color: #343A40;
+    /* 稍微加深文字，对比度更高一点 */
+    font-size: 10pt;
+    font-weight: bold;
+    border: 1px solid #DEE2E6;
+    /* 稍微加强一点边界感 */
+    border-radius: 6px;
+    padding: 6px;
 }

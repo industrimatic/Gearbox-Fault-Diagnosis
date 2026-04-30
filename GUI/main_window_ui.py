@@ -886,7 +886,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -899,7 +899,7 @@ class Ui_MainWindow(object):
         self.pushButton_3.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8bad\u7ec3", None))
         self.pushButton_4.setText(QCoreApplication.translate("MainWindow", u"\u6a21\u578b\u8fd0\u884c", None))
         self.pushButton_6.setText(QCoreApplication.translate("MainWindow", u"\u53c2\u6570\u8bbe\u7f6e", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u529f\u80fd\u533a", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"\u529f\u80fd\u533a\uff1a\u539f\u59cb\u6570\u636e", None))
         self.groupBox.setTitle(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u6570\u636e\u96c6", None))
         self.pushButton_5.setText(QCoreApplication.translate("MainWindow", u"\u52a0\u8f7d\u6570\u636e\u96c6", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"\u672a\u52a0\u8f7d\u6570\u636e\u96c6", None))

@@ -18,6 +18,14 @@ from sklearn.metrics import confusion_matrix
 from collections import deque
 
 # use $pyside6-uic '.\GUI\main_window.ui' -o '.\GUI\main_window_ui.py' to compile .ui file
+# """
+# STATUS      LABEL
+# Health      0
+# Chipped     1
+# Miss        2
+# Root        3
+# Surface     4
+# """
 
 
 def current_time():
@@ -208,6 +216,7 @@ class WorkThread(QThread):
     # }
     update_signal = Signal(int, int)
     end_signal = Signal()
+    log_update_signal = Signal(str)
 
     def __init__(self, model_methods: model_methods, weight, working_config: dict):
 
@@ -224,11 +233,13 @@ class WorkThread(QThread):
         index = 0
         wavename = 'cmor1.5-1.0'
         scales = np.geomspace(2, 256, num=256)
+        self.log_update_signal.emit(f'[{current_time()}]加载数据中...')
         datas = pd.read_csv(c['test_dataset_file'], sep='\t', skiprows=16, header=None)
         datas = datas.dropna(axis=1, how='all').values[:]
 
         self.model_methods.model.load_state_dict(torch.load(self.weight, map_location=self.model_methods.device))
         self.model_methods.model.eval()
+        self.log_update_signal.emit(f'[{current_time()}]加载完毕')
 
         while (head_index + 256 < datas.shape[0]) and self.running_flag:
 
@@ -529,6 +540,10 @@ class MyWindow(QMainWindow):
 
     def walvelet_transform(self):
 
+        if self.dataset_path == '':
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]警告：无法开始小波变换，未选择数据集')
+            return
+
         while self.form.verticalLayout_16.count():
             item = self.form.verticalLayout_16.takeAt(0)
             widget = item.widget()
@@ -660,7 +675,8 @@ class MyWindow(QMainWindow):
     def get_evaluate_weight_path(self):
         self.evaluate_weight_path = QFileDialog.getOpenFileName(self, "选择权重文件", "", "PyTorch Weights(*.pth)")[0]
         self.form.label_4.setText(f'已选中权重文件：{self.evaluate_weight_path}')
-        self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]已选择要评估的权重')
+        self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]注意：已选中权重')
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]注意：已选中权重')
 
     def start_draw_confusion_matrix(self):
 
@@ -736,13 +752,13 @@ class MyWindow(QMainWindow):
         self.form.verticalLayout_26.addWidget(self.live_canvas)
         self.live_ax = self.live_fig.add_subplot(111)
 
-        self.live_line, = self.live_ax.step([], [], where='mid', color='#ff7f0e', linewidth=2)
+        self.live_line, = self.live_ax.step([], [], where='pre', color='#ff7f0e', linewidth=2)
         self.live_ax.set_ylim(-0.5, 4.5)
         self.live_ax.set_yticks([0, 1, 2, 3, 4])
         self.live_ax.set_yticklabels(self.CLASS_NAMES)
 
         self.live_ax.set_title("实时故障诊断预测监控", fontproperties="SimHei", fontsize=12)  # 注意中文字体
-        self.live_ax.set_xlabel("帧数 (Time Frame)", fontproperties="SimHei", fontsize=12)
+        self.live_ax.set_xlabel("时间帧", fontproperties="SimHei", fontsize=12)
         self.live_ax.grid(True, linestyle='--', alpha=0.6)
         self.live_canvas.draw()
 
@@ -759,14 +775,18 @@ class MyWindow(QMainWindow):
 
         working_config = {
             'weight_path': self.evaluate_weight_path,
-            'test_dataset_file': './dataset/gearset/Health_30_2.csv',
+            'test_dataset_file': './test_dataset_30changed.csv',
         }
 
         self.work_thread = WorkThread(self.model_methods, self.evaluate_weight_path, working_config)
         self.work_thread.update_signal.connect(self.draw_live)
         self.work_thread.end_signal.connect(self.end_work)
+        self.work_thread.log_update_signal.connect(self.update_working_log)
         self.work_thread.start()
         self.form.pushButton_15.setEnabled(False)
+
+    def update_working_log(self, text: str):
+        self.form.plainTextEdit.appendPlainText(text)
 
     def draw_live(self, index: int, label: int):
         self.live_x_data.append(index)
@@ -778,7 +798,7 @@ class MyWindow(QMainWindow):
             self.live_line.set_color('#2ca02c')  # 绿色
         else:
             self.live_line.set_color('#d62728')  # 红色
-            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]警告：检测到异常情况！')
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]警告：检测到异常情况！模型预测为：{self.CLASS_NAMES[label]}')
 
         self.live_canvas.draw_idle()
         self.live_canvas.flush_events()
@@ -855,9 +875,9 @@ class MyWindow(QMainWindow):
 if __name__ == '__main__':
     app = QApplication()
 
-    # with open("GUI/style.css", "r", encoding="utf-8") as f:
-    #     qss_style = f.read()
-    #     app.setStyleSheet(qss_style)  # 全局应用样式
+    with open("GUI/style.css", "r", encoding="utf-8") as f:
+        qss_style = f.read()
+        app.setStyleSheet(qss_style)  # 全局应用样式
 
     window = MyWindow()
     window.show()
