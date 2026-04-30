@@ -9,12 +9,13 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidg
 from PySide6.QtCore import QThread, Signal
 from main_window_ui import Ui_MainWindow
 from datetime import datetime
-from time import time
+from time import time, sleep
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from dataloader.dataloader import get_seu_dataloaders
 from model.model import ResNet
 from sklearn.metrics import confusion_matrix
+from collections import deque
 
 # use $pyside6-uic '.\GUI\main_window.ui' -o '.\GUI\main_window_ui.py' to compile .ui file
 
@@ -199,6 +200,70 @@ class ConfusionMatrixThread(QThread):
         self.matrix_ready_signal.emit(matrix)
 
 
+class WorkThread(QThread):
+
+    # working_config = {
+    #     'weight_path': self.evaluate_weight_path,
+    #     'test_dataset_file': './dataset/gearset/Health_30_2.csv',
+    # }
+    update_signal = Signal(int, int)
+    end_signal = Signal()
+
+    def __init__(self, model_methods: model_methods, weight, working_config: dict):
+
+        super().__init__()
+        self.model_methods = model_methods
+        self.weight = weight
+        self.config = working_config
+        self.running_flag = True
+
+    def run(self):
+
+        c = self.config
+        head_index = 0
+        index = 0
+        wavename = 'cmor1.5-1.0'
+        scales = np.geomspace(2, 256, num=256)
+        datas = pd.read_csv(c['test_dataset_file'], sep='\t', skiprows=16, header=None)
+        datas = datas.dropna(axis=1, how='all').values[:]
+
+        self.model_methods.model.load_state_dict(torch.load(self.weight, map_location=self.model_methods.device))
+        self.model_methods.model.eval()
+
+        while (head_index + 256 < datas.shape[0]) and self.running_flag:
+
+            img_list = []
+            serial_datas = datas[head_index:head_index + 256, :]
+
+            for i in range(8):
+
+                coeffs, _ = pywt.cwt(serial_datas[:, i], scales, wavename)
+                amp = np.abs(coeffs)
+                ch_min, ch_max = amp.min(), amp.max()
+                if ch_max > ch_min:
+                    img = (amp - ch_min) / (ch_max - ch_min)
+                else:
+                    img = np.zeros_like(amp)
+                img_list.append(img)
+
+            input_tensor = torch.tensor(np.stack(img_list, axis=0), dtype=torch.float32).reshape(1, 8, 256, 256)
+            input_tensor = input_tensor.to(self.model_methods.device)
+
+            with torch.no_grad():
+
+                output_tensor = self.model_methods.model(input_tensor)
+                _, result = torch.max(output_tensor, axis=1)
+
+            predict_label = result.item()
+
+            head_index += 256
+            index += 1
+            self.update_signal.emit(index, predict_label)
+            sleep(0.05)
+
+        self.end_signal.emit()
+
+
 class MyWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -208,6 +273,7 @@ class MyWindow(QMainWindow):
         self.model_methods = model_methods()
         self.bind()
         self.init_parameters()
+        self.init_live_plot()
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]欢迎使用智能齿轮箱故障诊断系统！')
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]该界面为全局控制台')
         self.form.plainTextEdit_2.appendPlainText(f'[{current_time()}]该界面为模型训练控制台')
@@ -263,6 +329,10 @@ class MyWindow(QMainWindow):
         # 开始评估与结束评估
         self.form.pushButton_13.clicked.connect(self.start_draw_confusion_matrix)
         self.form.pushButton_14.clicked.connect(self.stop_evaluate_thread)
+
+        # 开始工作与结束工作
+        self.form.pushButton_15.clicked.connect(self.start_work)
+        self.form.pushButton_16.clicked.connect(self.stop_working)
 
     def init_parameters(self):
 
@@ -585,7 +655,7 @@ class MyWindow(QMainWindow):
         self.form.pushButton_10.setEnabled(True)
         self.form.pushButton_11.setEnabled(True)
 
-# ----------模型运行界面-------------
+# ----------模型评估模块-------------
 
     def get_evaluate_weight_path(self):
         self.evaluate_weight_path = QFileDialog.getOpenFileName(self, "选择权重文件", "", "PyTorch Weights(*.pth)")[0]
@@ -650,6 +720,81 @@ class MyWindow(QMainWindow):
         self.form.pushButton_13.setEnabled(True)
         self.form.pushButton_14.setEnabled(True)
         self.form.plainTextEdit_3.appendPlainText(f'[{current_time()}]评估结束，已显示混淆矩阵')
+
+# ----------模型工作模块-------------
+
+    def init_live_plot(self):
+
+        self.CLASS_NAMES = ['Health', 'Chipped', 'Miss', 'Root', 'Surface']
+
+        self.display_length = 50
+        self.live_x_data = deque([0] * self.display_length, maxlen=self.display_length)
+        self.live_y_data = deque([0] * self.display_length, maxlen=self.display_length)
+
+        self.live_fig = Figure(figsize=(8, 4), tight_layout=True)
+        self.live_canvas = FigureCanvas(self.live_fig)
+        self.form.verticalLayout_26.addWidget(self.live_canvas)
+        self.live_ax = self.live_fig.add_subplot(111)
+
+        self.live_line, = self.live_ax.step([], [], where='mid', color='#ff7f0e', linewidth=2)
+        self.live_ax.set_ylim(-0.5, 4.5)
+        self.live_ax.set_yticks([0, 1, 2, 3, 4])
+        self.live_ax.set_yticklabels(self.CLASS_NAMES)
+
+        self.live_ax.set_title("实时故障诊断预测监控", fontproperties="SimHei", fontsize=12)  # 注意中文字体
+        self.live_ax.set_xlabel("帧数 (Time Frame)", fontproperties="SimHei", fontsize=12)
+        self.live_ax.grid(True, linestyle='--', alpha=0.6)
+        self.live_canvas.draw()
+
+    def start_work(self):
+
+        if self.evaluate_weight_path == '':
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]警告：无法开始工作，未选择权重文件')
+            return
+
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]注意：开始工作')
+
+        self.live_x_data = deque([0] * self.display_length, maxlen=self.display_length)
+        self.live_y_data = deque([0] * self.display_length, maxlen=self.display_length)
+
+        working_config = {
+            'weight_path': self.evaluate_weight_path,
+            'test_dataset_file': './dataset/gearset/Health_30_2.csv',
+        }
+
+        self.work_thread = WorkThread(self.model_methods, self.evaluate_weight_path, working_config)
+        self.work_thread.update_signal.connect(self.draw_live)
+        self.work_thread.end_signal.connect(self.end_work)
+        self.work_thread.start()
+        self.form.pushButton_15.setEnabled(False)
+
+    def draw_live(self, index: int, label: int):
+        self.live_x_data.append(index)
+        self.live_y_data.append(label)
+        self.live_line.set_data(self.live_x_data, self.live_y_data)
+        self.live_ax.set_xlim(self.live_x_data[0], self.live_x_data[-1] + 1)
+
+        if label == 0:
+            self.live_line.set_color('#2ca02c')  # 绿色
+        else:
+            self.live_line.set_color('#d62728')  # 红色
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]警告：检测到异常情况！')
+
+        self.live_canvas.draw_idle()
+        self.live_canvas.flush_events()
+
+    def stop_working(self):
+
+        if hasattr(self, 'work_thread') and self.work_thread.running_flag:
+
+            self.form.pushButton_16.setEnabled(False)
+            self.work_thread.running_flag = False
+            self.form.plainTextEdit.appendPlainText(f'[{current_time()}]注意：正在停止工作')
+
+    def end_work(self):
+        self.form.pushButton_15.setEnabled(True)
+        self.form.pushButton_16.setEnabled(True)
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]注意：停止工作成功')
 
     def update_parameters_batchsize(self, value: int):
         self.batch_size = value

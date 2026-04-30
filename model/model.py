@@ -95,8 +95,11 @@ class ResNet(torch.nn.Module):
 
 if __name__ == "__main__":
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    test_model = ResNet()
-    test_model.to(device=device)
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # test_model = ResNet()
+    # test_model.to(device=device)
 
-    summary(test_model, input_size=(8, 256, 256))
+    # summary(test_model, input_size=(8, 256, 256))
+    dummy_input = torch.randn(1, 8, 256, 256)
+    model = ResNet()
+    torch.onnx.export(model, dummy_input, "my_model.onnx")
