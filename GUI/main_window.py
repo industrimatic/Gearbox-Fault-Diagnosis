@@ -5,7 +5,7 @@ import pywt
 import torch
 import seaborn as sns
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem
+from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QDialog, QTextBrowser, QVBoxLayout, QMessageBox
 from PySide6.QtCore import QThread, Signal
 from main_window_ui import Ui_MainWindow
 from datetime import datetime
@@ -31,6 +31,31 @@ from collections import deque
 def current_time():
     # use f-sting and [{current_time()}] to format console output
     return datetime.now().strftime("%H:%M:%S")
+
+
+class HelpDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle('设置页面说明')
+        self.resize(600, 500)
+        layout = QVBoxLayout(self)
+
+        self.browser = QTextBrowser(self)
+        self.browser.setHtml("""
+            <h3>设置说明</h3>
+            <p><b>1. 采样开始/结束时间 (s):<br/></b> 截取原始数据的时间范围。例如 4s-10s 表示只读取该时段内的振动信号。注意训练集不要与其他两个集重合，且设定的开始时间要先于结束时间，除此之外没有其他的要求。
+                             <ul>
+                                <li>训练集：用于训练模型</li>
+                                <li>测试集：在训练的时候，每过一个Epoch就会使用测试集计算一次准确率</li>
+                                <li>验证集：用于使用混淆矩阵测试模型性能</li>
+                                </ul></p>
+            <p><b>2. 滑窗长度:<br/></b> 每一个样本包含的数据点数。</p>
+            <p><b>3. BATCH_SIZE:<br/></b> 深度学习训练时每一批次输入的样本数量。显存越大可设置越高。</p>
+            <p><b>4. EPOCH:<br/></b> 完整遍历一遍训练集的次数，这个次数代表要训练多少轮。</p>
+            <p><b>5. NUM_WORKERS:<br/></b> 多线程加载数据的线程数，建议设为 CPU 核心数。</p>
+        """)
+
+        layout.addWidget(self.browser)
 
 
 class model_methods():
@@ -300,7 +325,7 @@ class MyWindow(QMainWindow):
         self.form.pushButton_2.clicked.connect(lambda: self.switch_widget(1))
         self.form.pushButton_3.clicked.connect(lambda: self.switch_widget(2))
         self.form.pushButton_4.clicked.connect(lambda: self.switch_widget(3))
-        self.form.pushButton_6.clicked.connect(lambda: self.switch_widget(4))
+        self.form.pushButton_6.clicked.connect(self.change_to_settings)
 
         # 选择数据集
         self.form.pushButton_5.clicked.connect(self.choose_dataset_file)
@@ -345,6 +370,12 @@ class MyWindow(QMainWindow):
         self.form.pushButton_15.clicked.connect(self.start_work)
         self.form.pushButton_16.clicked.connect(self.stop_working)
 
+        # 恢复默认
+        self.form.pushButton_17.clicked.connect(self.restore_default)
+
+        # 展示说明页面
+        self.form.pushButton_18.clicked.connect(self.show_help_dialog)
+
     def init_parameters(self):
 
         self.weight_name = ''
@@ -367,6 +398,8 @@ class MyWindow(QMainWindow):
         self.form.lineEdit.setText(str(self.train_stride))
         self.form.lineEdit_4.setText(str(self.epoch))
         self.form.lineEdit_5.setText(str(self.batch_size))
+
+        self.is_pop_help = False
 
     def clear_console(self):
         self.form.plainTextEdit.clear()
@@ -481,6 +514,7 @@ class MyWindow(QMainWindow):
 
         # 最后顺带刷新一下信号处理界面的combobox
         self.choose_trans_dataset()
+        self.set_max_time()
 
     def show_raw_data(self, label: str):  # 展示原始数据
         if True not in self.data_chosen_dic.values():
@@ -816,10 +850,82 @@ class MyWindow(QMainWindow):
         self.form.pushButton_16.setEnabled(True)
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]注意：停止工作成功')
 
+# ----------参数设置模块-------------
+
+    def change_to_settings(self):
+        self.switch_widget(4)
+        if self.is_pop_help is False:
+            self.is_pop_help = True
+            QMessageBox.about(self, "注意", "在进行设置之前，请阅读设置说明。")
+
+    def restore_default(self):
+        self.form.plainTextEdit.appendPlainText(f'[{current_time()}]参数设置恢复默认')
+
+        self.train_start_time = 0
+        self.form.spinBox_3.setValue(0)
+        self.train_end_time = 10
+        self.form.spinBox_4.setValue(10)
+        self.train_stride = 128
+        self.form.spinBox_5.setValue(128)
+        self.test_start_time = 10
+        self.form.spinBox_6.setValue(10)
+        self.test_end_time = 15
+        self.form.spinBox_7.setValue(15)
+        self.val_start_time = 20
+        self.form.spinBox_8.setValue(20)
+        self.val_end_time = 100
+        self.form.spinBox_9.setValue(100)
+        self.batch_size = 16
+        self.form.spinBox.setValue(16)
+        self.epoch = 20
+        self.form.spinBox_2.setValue(20)
+        self.num_workers = 4
+        self.form.spinBox_12.setValue(4)
+
+        self.form.spinBox_3.setMaximum(self.form.spinBox_4.value() - 1)
+        self.form.spinBox_4.setMinimum(self.form.spinBox_3.value() + 1)
+        self.form.spinBox_6.setMaximum(self.form.spinBox_7.value() - 1)
+        self.form.spinBox_7.setMinimum(self.form.spinBox_6.value() + 1)
+        self.form.spinBox_8.setMaximum(self.form.spinBox_9.value() - 1)
+        self.form.spinBox_9.setMinimum(self.form.spinBox_8.value() + 1)
+
+    def show_help_dialog(self):
+        dialog = HelpDialog(self)
+        dialog.exec()
+
     def update_parameters_batchsize(self, value: int):
         self.batch_size = value
         self.form.plainTextEdit.appendPlainText(f'[{current_time()}]已更新BATCH_SIZE={value}')
         self.form.lineEdit_5.setText(str(self.batch_size))
+
+    def set_max_time(self):
+        datas_num = []
+        for key, val in self.data_chosen_dic.items():
+            if val is True:
+                file_path = f'{self.dataset_path}/{key}_30_2.csv'
+                # df = pd.read_csv(file_path, sep='\t', skiprows=16, header=None, usecols=[0])
+                # data_num = df.shape[0]
+                # datas_num.append(data_num)
+                with open(file_path, 'rb') as f:
+                    total_lines = sum(chunk.count(b'\n') for chunk in iter(lambda: f.read(1024 * 1024), b''))
+                    data_num = total_lines - 16
+                    if data_num > 0:
+                        datas_num.append(data_num)
+
+        if not datas_num:
+            self.form.label_29.setText('数据集可用时间：0s')
+            return
+
+        lowest_data_num = min(datas_num)
+        max_time = max(0, lowest_data_num // 5120 - 1)
+        self.form.label_29.setText(f'数据集可用时间：{max_time}s')
+
+        self.form.spinBox_3.setMaximum(max_time)
+        self.form.spinBox_4.setMaximum(max_time)
+        self.form.spinBox_6.setMaximum(max_time)
+        self.form.spinBox_7.setMaximum(max_time)
+        self.form.spinBox_8.setMaximum(max_time)
+        self.form.spinBox_9.setMaximum(max_time)
 
     def update_parameters_epoch(self, value: int):
         self.epoch = value

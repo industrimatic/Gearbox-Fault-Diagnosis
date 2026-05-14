@@ -51,6 +51,11 @@ QLabel#label_2 {
     border-bottom: 2px solid #CED4DA;
 }
 
+/* 让所有 Label 的背景透明，以便融入父组件（如 GroupBox）的背景色 */
+QLabel {
+    background-color: transparent;
+}
+
 /* 所有的 GroupBox (模块分组框) */
 QGroupBox {
     border: 1px solid #E9ECEF;
