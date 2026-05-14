@@ -5,19 +5,16 @@ import os
 from time import time
 from dataloader.dataloader import get_seu_dataloaders
 from model.model import ResNet
+from model.other_model import BaseModel
 
 DATA_PATH = './dataset/gearset/'
-WEIGHT_PATH = './weight/'
+WEIGHT_PATH = './weight/basemodel/'
 BATCH_SIZE = 16
 NUM_WORKERS = 4
 EPOCH = 20
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = ResNet()
-model.to(device=DEVICE)
-
-criterion = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+# model = ResNet()
 
 
 def train(epoch, train_loader):
@@ -98,6 +95,12 @@ def plot_accuracy_figure(show_accu: list):
 
 if __name__ == "__main__":
 
+    model = BaseModel()
+    model.to(device=DEVICE)
+
+    criterion = torch.nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
     start_time = time()
 
     train_loader, test_loader = get_seu_dataloaders(DATA_PATH, BATCH_SIZE, NUM_WORKERS)
@@ -112,7 +115,7 @@ if __name__ == "__main__":
 
         if show_accu[-1] == max(show_accu):
             accu_str = f'{show_accu[-1]:.3f}'.replace('.', '_')
-            torch.save(model.state_dict(), weight_filename(f'ALL{epoch}NOW{epoch}AC{accu_str}'))
+            torch.save(model.state_dict(), weight_filename(f'all_{EPOCH}_now_{epoch+1}_AC{accu_str}'))
             print("已保存更好的模型")
         else:
             print("该epoch并非最佳模型")

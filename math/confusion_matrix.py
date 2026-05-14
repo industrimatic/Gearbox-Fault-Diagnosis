@@ -4,24 +4,18 @@ import seaborn as sns
 from time import time
 from sklearn.metrics import confusion_matrix
 from dataloader.dataloader import get_seu_dataloaders
+from dataloader.noise_dataloader import get_noisy_seu_dataloaders
 from model.model import ResNet
+from model.other_model import BaseModel
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_PATH = './dataset/gearset/'
-WEIGHT_PATH = r'weight\2026_4_23\epoch20_8_ac100.pth'
+WEIGHT_PATH = r'weight\2026_4_23\epoch20_9_ac100.pth'
 CLASS_NAME = ['Health', 'Chipped', 'Miss', 'Root', 'Surface']
 
-model = ResNet()
-model.load_state_dict(torch.load(WEIGHT_PATH))
-model.to(DEVICE)
-model.eval()
 
-
-def plot_confusion_matrix(true_labels: list,
-                          predicted_labels: list,
-                          class_names: list,
-                          start_time: int,
-                          end_time: int,):
+def plot_confusion_matrix(true_labels: list, predicted_labels: list, class_names: list,
+                          start_time: int, end_time: int,):
 
     matrix = confusion_matrix(true_labels, predicted_labels)
 
@@ -39,11 +33,17 @@ def plot_confusion_matrix(true_labels: list,
 
 if __name__ == "__main__":
 
+    model = ResNet()
+    model.load_state_dict(torch.load(WEIGHT_PATH))
+    model.to(DEVICE)
+    model.eval()
+
     start_time = time()
     val_start_time = 20
     val_end_time = 100
-    _, _, val_loader = get_seu_dataloaders(data_dir=DATASET_PATH, need_val_dataset=True,
-                                           val_start_time=val_start_time, val_end_time=val_end_time)
+    _, _, val_loader = get_noisy_seu_dataloaders(data_dir=DATASET_PATH, need_val_dataset=True,
+                                                 val_start_time=val_start_time, val_end_time=val_end_time,
+                                                 num_workers=4, snr=16)
     all_iteration = len(val_loader)
     all_preds = []
     all_labels = []
