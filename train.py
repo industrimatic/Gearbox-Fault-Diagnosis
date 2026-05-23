@@ -6,6 +6,7 @@ from time import time
 from dataloader.dataloader import get_seu_dataloaders
 from model.model import ResNet
 from model.other_model import BaseModel
+from model.without_resconnect import ResNetWithoutConnection
 
 DATA_PATH = './dataset/gearset/'
 WEIGHT_PATH = './weight/basemodel/'
