@@ -6,12 +6,13 @@ import matplotlib.pyplot as plt
 from time import time
 from model.model import ResNet
 from model.other_model import get_googlenet, get_alexnet, get_resnet, get_vgg
+from model.without_resconnect import ResNetWithoutConnection
 
-WIGHT_PATH = r'weight\googlenet\all_20now_20AC100_000.pth'
+WIGHT_PATH = r'weight\2026_4_23\epoch20_9_ac100.pth'
 
 if __name__ == '__main__':
 
-    model = get_googlenet()
+    model = ResNet()
     model.eval()
     model.load_state_dict(torch.load(WIGHT_PATH))
     wavename = 'cmor1.5-1.0'

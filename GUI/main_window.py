@@ -1,9 +1,12 @@
 import os
+import sys
 import pandas as pd
 import numpy as np
 import pywt
 import torch
 import seaborn as sns
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from PySide6.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidgetItem, QDialog, QTextBrowser, QVBoxLayout, QMessageBox
 from PySide6.QtCore import QThread, Signal

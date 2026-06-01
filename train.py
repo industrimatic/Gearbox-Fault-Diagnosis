@@ -9,7 +9,7 @@ from model.other_model import BaseModel
 from model.without_resconnect import ResNetWithoutConnection
 
 DATA_PATH = './dataset/gearset/'
-WEIGHT_PATH = './weight/basemodel/'
+WEIGHT_PATH = './weight/withoutConnect/'
 BATCH_SIZE = 16
 NUM_WORKERS = 4
 EPOCH = 20
@@ -37,6 +37,7 @@ def train(epoch, train_loader):
         running_loss += loss.item()
         if batch_index % 20 == 19:
             print(f'|epoch:{epoch+1}|All Iteration:{batch_num} Now:{batch_index+1}|loss:{running_loss/20}')
+            #  print(f'|epoch:{epoch+1}|All Iteration:{batch_num} Now:{batch_index+1}|loss:{running_loss/20}')
             running_loss = 0.0
 
 
@@ -96,7 +97,7 @@ def plot_accuracy_figure(show_accu: list):
 
 if __name__ == "__main__":
 
-    model = BaseModel()
+    model = ResNetWithoutConnection()
     model.to(device=DEVICE)
 
     criterion = torch.nn.CrossEntropyLoss()

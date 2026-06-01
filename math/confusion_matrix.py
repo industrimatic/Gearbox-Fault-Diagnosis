@@ -7,10 +7,11 @@ from dataloader.dataloader import get_seu_dataloaders
 from dataloader.noise_dataloader import get_noisy_seu_dataloaders
 from model.model import ResNet
 from model.other_model import BaseModel
+from model.without_resconnect import ResNetWithoutConnection
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DATASET_PATH = './dataset/gearset/'
-WEIGHT_PATH = r'weight\2026_4_23\epoch20_9_ac100.pth'
+WEIGHT_PATH = r"weight\withoutConnect\all_20_now_17_AC100_000.pth"
 CLASS_NAME = ['Health', 'Chipped', 'Miss', 'Root', 'Surface']
 
 
@@ -33,7 +34,7 @@ def plot_confusion_matrix(true_labels: list, predicted_labels: list, class_names
 
 if __name__ == "__main__":
 
-    model = ResNet()
+    model = ResNetWithoutConnection()
     model.load_state_dict(torch.load(WEIGHT_PATH))
     model.to(DEVICE)
     model.eval()
